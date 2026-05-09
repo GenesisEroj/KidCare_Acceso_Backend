@@ -2,6 +2,8 @@ package com.kidcare.acceso_service.repository;
 
 import com.kidcare.acceso_service.model.Delegado;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
@@ -10,9 +12,8 @@ import java.util.Optional;
 @Repository
 public interface DelegadoRepository extends JpaRepository<Delegado, Integer> {
 
-    // Obtiene todos los delegados de un acceso
-    List<Delegado> findByAccesoIdAcceso(Integer idAcceso);
+    @Query("SELECT d FROM Delegado d WHERE d.acceso.idAcceso = :idAcceso")
+    List<Delegado> findByAccesoIdAcceso(@Param("idAcceso") Integer idAcceso);
 
-    // Busca un delegado por su id de usuario
     Optional<Delegado> findByIdUsuarioDelegado(Integer idUsuarioDelegado);
 }

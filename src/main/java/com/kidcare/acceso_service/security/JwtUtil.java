@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.util.Date;
 
+// Clase utilitaria que genera y valida tokens JWT
 @Component
 public class JwtUtil {
 
@@ -47,6 +48,15 @@ public class JwtUtil {
                 .parseSignedClaims(token)
                 .getPayload()
                 .get("rol", String.class);
+    }
+
+    public Integer getUserIdFromToken(String token) {
+        return Jwts.parser()
+                .verifyWith(getKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("idUsuario", Integer.class);
     }
 
     public boolean validateToken(String token) {
