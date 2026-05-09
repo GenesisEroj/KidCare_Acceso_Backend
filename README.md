@@ -152,6 +152,6 @@ El microservicio estará disponible en `http://localhost:8082`
 
 | Nombre | Rol |
 |--------|-----|
-| Benjamín Peña | Líder de Proyecto / DBA / Analista Funcional |
+| Génesis Rojas | Líder de Proyecto / DBA / Analista Funcional |
 | Francisco Monsalve | Frontend Mobile / QA |
-| Génesis Rojas | Backend / Integración IA / DevOps |
+| Benjamín Peña | Backend / Integración IA / DevOps |
