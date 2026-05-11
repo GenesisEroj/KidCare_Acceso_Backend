@@ -3,6 +3,7 @@ package com.kidcare.acceso_service.controller;
 import com.kidcare.acceso_service.dto.TokenMedicoRequestDTO;
 import com.kidcare.acceso_service.dto.TokenMedicoResponseDTO;
 import com.kidcare.acceso_service.dto.VerificarAccesoRequestDTO;
+import com.kidcare.acceso_service.dto.VerificarAccesoResponseDTO;
 import com.kidcare.acceso_service.service.TokenMedicoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,11 +27,11 @@ public class TokenMedicoController {
         return ResponseEntity.ok(tokenMedicoService.generarToken(dto, idTutor));
     }
 
-    // POST /api/acceso/medico/verificar — verifica proximidad geográfica del médico
+    // POST /api/acceso/medico/verificar — verifica proximidad y retorna historial
     @PostMapping("/verificar")
-    public ResponseEntity<String> verificar(@Valid @RequestBody VerificarAccesoRequestDTO dto) {
-        tokenMedicoService.verificarProximidad(dto);
-        return ResponseEntity.ok("Acceso verificado correctamente");
+    public ResponseEntity<VerificarAccesoResponseDTO> verificar(
+            @Valid @RequestBody VerificarAccesoRequestDTO dto) {
+        return ResponseEntity.ok(tokenMedicoService.verificarYObtenerHistorial(dto));
     }
 
     // DELETE /api/acceso/medico/revocar/{token} — revoca manualmente un token

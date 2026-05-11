@@ -2,6 +2,7 @@ package com.kidcare.acceso_service.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import java.time.LocalDateTime;
 
 // Entidad que almacena el enlace temporal generado para el médico
 @Data
@@ -47,4 +48,8 @@ public class TokenMedico {
     // RUT del médico (opcional)
     @Column(name = "rut_medico")
     private String rutMedico;
+
+    // Fecha y hora de creación del token (para expiración de 20 minutos)
+    @Column(name = "fecha_creacion")
+    private LocalDateTime fechaCreacion;
 }

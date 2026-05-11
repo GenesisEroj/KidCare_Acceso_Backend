@@ -12,8 +12,10 @@ import com.kidcare.acceso_service.repository.TokenMedicoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.kidcare.acceso_service.dto.VerificarAccesoResponseDTO;
 import java.security.SecureRandom;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
 
@@ -29,6 +31,9 @@ public class TokenMedicoService {
 
     @Autowired
     private LogAccesoMedicoRepository logAccesoMedicoRepository;
+
+    @org.springframework.beans.factory.annotation.Value("${historial.service.url:http://localhost:8084}")
+    private String historialServiceUrl;
 
     // URL base de la app web donde el médico verá la bitácora
     private static final String URL_BASE = "https://kidcare.vercel.app/medico/";
@@ -67,6 +72,7 @@ public class TokenMedicoService {
         tokenMedico.setLongitudPadre(dto.getLongitudPadre());
         tokenMedico.setNombreMedico(dto.getNombreMedico());
         tokenMedico.setRutMedico(dto.getRutMedico());
+        tokenMedico.setFechaCreacion(LocalDateTime.now());
         tokenMedicoRepository.save(tokenMedico);
 
         // Registra el evento de creación en el log
@@ -91,6 +97,15 @@ public class TokenMedicoService {
         if (!tokenMedico.getEstadoToken().equals("activo")) {
             registrarLog(tokenMedico, "ERROR", null);
             throw new RuntimeException("El enlace no está activo");
+        }
+
+        // Verifica que el token no haya expirado (20 minutos)
+        if (tokenMedico.getFechaCreacion() != null &&
+                tokenMedico.getFechaCreacion().plusMinutes(20).isBefore(LocalDateTime.now())) {
+            tokenMedico.setEstadoToken("expirado");
+            tokenMedicoRepository.save(tokenMedico);
+            registrarLog(tokenMedico, "EXPIRADO", null);
+            throw new RuntimeException("El enlace ha expirado (validez: 20 minutos)");
         }
 
         // Calcula la distancia entre el médico y el tutor
@@ -137,6 +152,37 @@ public class TokenMedicoService {
                         * Math.sin(dLon / 2) * Math.sin(dLon / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return RADIO_TIERRA * c;
+    }
+
+    // Verifica proximidad geográfica y retorna el historial del menor
+    public VerificarAccesoResponseDTO verificarYObtenerHistorial(VerificarAccesoRequestDTO dto) {
+        verificarProximidad(dto);
+
+        TokenMedico tokenMedico = tokenMedicoRepository.findByToken(dto.getToken())
+                .orElseThrow(() -> new RuntimeException("Token no encontrado"));
+        Integer idMenor = tokenMedico.getAcceso().getIdMenor();
+
+        VerificarAccesoResponseDTO response = new VerificarAccesoResponseDTO();
+        response.setEstado("acceso_concedido");
+        response.setIdMenor(idMenor);
+        response.setNombreMedico(tokenMedico.getNombreMedico());
+
+        try {
+            org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+            String url = historialServiceUrl + "/api/historial/medico/" + idMenor;
+            @SuppressWarnings("unchecked")
+            java.util.Map<String, Object> historial = restTemplate.getForObject(url, java.util.Map.class);
+            if (historial != null && historial.get("resumen") != null) {
+                response.setResumen(historial.get("resumen").toString());
+                response.setTipo("resumen");
+            } else {
+                response.setTipo("sin_historial");
+            }
+        } catch (Exception e) {
+            response.setTipo("sin_historial");
+        }
+
+        return response;
     }
 
     // Registra un evento en el log de acceso médico
