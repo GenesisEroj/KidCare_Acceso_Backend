@@ -16,7 +16,8 @@ public class TokenMedicoRequestDTO {
     @NotBlank(message = "El nombre del médico es obligatorio")
     private String nombreMedico;
 
-    // RUT del médico (opcional)
+    // RUT del médico
+    @NotBlank(message = "El RUT del médico es obligatorio")
     private String rutMedico;
 
     // Latitud del tutor al momento de generar el enlace
