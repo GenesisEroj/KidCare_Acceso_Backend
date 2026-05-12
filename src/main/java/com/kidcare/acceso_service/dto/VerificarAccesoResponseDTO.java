@@ -9,4 +9,5 @@ public class VerificarAccesoResponseDTO {
     private String nombreMedico;
     private String resumen;
     private String tipo;
+    private String expiracion;
 }

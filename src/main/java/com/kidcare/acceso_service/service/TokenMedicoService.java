@@ -37,8 +37,8 @@ public class TokenMedicoService {
     @org.springframework.beans.factory.annotation.Value("${historial.service.url:http://localhost:8084}")
     private String historialServiceUrl;
 
-    // URL base de la app web donde el médico verá la bitácora
-    private static final String URL_BASE = "https://kidcare.vercel.app/medico/";
+    @org.springframework.beans.factory.annotation.Value("${acceso.medico.url-base:http://localhost:5173/acceso/}")
+    private String urlBase;
 
     // Genera un enlace temporal único para que el médico acceda a la bitácora
     public TokenMedicoResponseDTO generarToken(TokenMedicoRequestDTO dto, Integer idUsuarioTutor) {
@@ -68,7 +68,7 @@ public class TokenMedicoService {
         TokenMedico tokenMedico = new TokenMedico();
         tokenMedico.setAcceso(acceso);
         tokenMedico.setToken(tokenValue);
-        tokenMedico.setUrlAcceso(URL_BASE + tokenValue);
+        tokenMedico.setUrlAcceso(urlBase + tokenValue);
         tokenMedico.setEstadoToken("activo");
         tokenMedico.setLatitudPadre(dto.getLatitudPadre());
         tokenMedico.setLongitudPadre(dto.getLongitudPadre());
@@ -83,7 +83,7 @@ public class TokenMedicoService {
         // Retorna el DTO con los datos del enlace
         TokenMedicoResponseDTO response = new TokenMedicoResponseDTO();
         response.setToken(tokenValue);
-        response.setUrlAcceso(URL_BASE + tokenValue);
+        response.setUrlAcceso(urlBase + tokenValue);
         response.setNombreMedico(dto.getNombreMedico());
         response.setEstadoToken("activo");
         return response;
@@ -168,6 +168,7 @@ public class TokenMedicoService {
         response.setEstado("acceso_concedido");
         response.setIdMenor(idMenor);
         response.setNombreMedico(tokenMedico.getNombreMedico());
+        response.setExpiracion(tokenMedico.getFechaCreacion().plusMinutes(20).toString());
 
         try {
             RestTemplate restTemplate = new RestTemplate();
