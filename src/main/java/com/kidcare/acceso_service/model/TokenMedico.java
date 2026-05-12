@@ -52,4 +52,8 @@ public class TokenMedico {
     // Fecha y hora de creación del token (para expiración de 20 minutos)
     @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion;
+
+    // IDs de observaciones seleccionadas, separados por coma. NULL = todas.
+    @Column(name = "observacion_ids", columnDefinition = "TEXT")
+    private String observacionIds;
 }

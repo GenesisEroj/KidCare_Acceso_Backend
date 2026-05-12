@@ -18,6 +18,7 @@ import java.security.SecureRandom;
 import java.util.Map;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 
@@ -75,6 +76,9 @@ public class TokenMedicoService {
         tokenMedico.setNombreMedico(dto.getNombreMedico());
         tokenMedico.setRutMedico(dto.getRutMedico());
         tokenMedico.setFechaCreacion(LocalDateTime.now());
+        if (dto.getObservacionIds() != null && !dto.getObservacionIds().isEmpty()) {
+            tokenMedico.setObservacionIds(String.join(",", dto.getObservacionIds()));
+        }
         tokenMedicoRepository.save(tokenMedico);
 
         // Registra el evento de creación en el log
@@ -169,6 +173,9 @@ public class TokenMedicoService {
         response.setIdMenor(idMenor);
         response.setNombreMedico(tokenMedico.getNombreMedico());
         response.setExpiracion(tokenMedico.getFechaCreacion().plusMinutes(20).toString());
+        if (tokenMedico.getObservacionIds() != null && !tokenMedico.getObservacionIds().isBlank()) {
+            response.setObservacionIds(Arrays.asList(tokenMedico.getObservacionIds().split(",")));
+        }
 
         try {
             RestTemplate restTemplate = new RestTemplate();

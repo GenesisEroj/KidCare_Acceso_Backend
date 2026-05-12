@@ -1,6 +1,7 @@
 package com.kidcare.acceso_service.dto;
 
 import lombok.Data;
+import java.util.List;
 
 @Data
 public class VerificarAccesoResponseDTO {
@@ -10,4 +11,6 @@ public class VerificarAccesoResponseDTO {
     private String resumen;
     private String tipo;
     private String expiracion;
+    // null = el tutor autorizó todas; lista = solo estas observaciones
+    private List<String> observacionIds;
 }

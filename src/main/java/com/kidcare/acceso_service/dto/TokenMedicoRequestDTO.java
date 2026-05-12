@@ -3,6 +3,7 @@ package com.kidcare.acceso_service.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import java.util.List;
 
 // DTO que recibe los datos para generar un enlace temporal para el médico
 @Data
@@ -27,4 +28,7 @@ public class TokenMedicoRequestDTO {
     // Longitud del tutor al momento de generar el enlace
     @NotBlank(message = "La longitud es obligatoria")
     private String longitudPadre;
+
+    // IDs de observaciones a compartir. NULL o vacío = todas.
+    private List<String> observacionIds;
 }
