@@ -13,7 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.kidcare.acceso_service.dto.VerificarAccesoResponseDTO;
+import org.springframework.web.client.RestTemplate;
 import java.security.SecureRandom;
+import java.util.Map;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Base64;
@@ -168,10 +170,10 @@ public class TokenMedicoService {
         response.setNombreMedico(tokenMedico.getNombreMedico());
 
         try {
-            org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+            RestTemplate restTemplate = new RestTemplate();
             String url = historialServiceUrl + "/api/historial/medico/" + idMenor;
             @SuppressWarnings("unchecked")
-            java.util.Map<String, Object> historial = restTemplate.getForObject(url, java.util.Map.class);
+            Map<String, Object> historial = restTemplate.getForObject(url, Map.class);
             if (historial != null && historial.get("resumen") != null) {
                 response.setResumen(historial.get("resumen").toString());
                 response.setTipo("resumen");
