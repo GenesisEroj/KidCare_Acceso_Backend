@@ -86,6 +86,9 @@ public class TokenMedicoService {
         if (dto.getObservacionIds() != null && !dto.getObservacionIds().isEmpty()) {
             tokenMedico.setObservacionIds(String.join(",", dto.getObservacionIds()));
         }
+        tokenMedico.setNombreMenor(dto.getNombreMenor());
+        tokenMedico.setNombreTutor(dto.getNombreTutor());
+        tokenMedico.setEdadMenor(dto.getEdadMenor());
         tokenMedicoRepository.save(tokenMedico);
 
         // Registra el evento de creación en el log
@@ -180,6 +183,12 @@ public class TokenMedicoService {
         response.setIdMenor(idMenor);
         response.setNombreMedico(tokenMedico.getNombreMedico());
         response.setExpiracion(tokenMedico.getFechaCreacion().plusMinutes(20).toString());
+        response.setNombreMenor(tokenMedico.getNombreMenor());
+        response.setNombreTutor(tokenMedico.getNombreTutor());
+        response.setEdadMenor(tokenMedico.getEdadMenor());
+        if (tokenMedico.getFechaCreacion() != null) {
+            response.setHoraGenerado(tokenMedico.getFechaCreacion().toString());
+        }
         if (tokenMedico.getObservacionIds() != null && !tokenMedico.getObservacionIds().isBlank()) {
             response.setObservacionIds(Arrays.asList(tokenMedico.getObservacionIds().split(",")));
         }
