@@ -1,0 +1,49 @@
+services:
+  ms-acceso:
+    build: .
+    image: kidcare-ms-acceso
+    container_name: kidcare-acceso
+    ports:
+      - "8082:8082"
+    environment:
+      - DB_ACCESO_URL=jdbc:mysql://mysql-acceso:3306/db_acceso?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      - DB_USERNAME=${DB_USERNAME:-root}
+      - DB_PASSWORD=${DB_PASSWORD:-kidcare123}
+      - JWT_SECRET=${JWT_SECRET:-kidcare_super_secret_jwt_key_for_dev_only_1234567890}
+      - JWT_EXPIRATION=86400000
+      - HISTORIAL_SERVICE_URL=${HISTORIAL_SERVICE_URL:-http://ms-historial:8084}
+      - PORT=8082
+    depends_on:
+      mysql-acceso:
+        condition: service_healthy
+    networks:
+      - kidcare-network
+
+  mysql-acceso:
+    image: mysql:8.0
+    container_name: mysql-acceso
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-kidcare123}
+      MYSQL_DATABASE: db_acceso
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_acceso_data:/var/lib/mysql
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pkidcare123"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - kidcare-network
+
+volumes:
+  mysql_acceso_data:
+
+networks:
+  kidcare-network:
+    driver: bridge
