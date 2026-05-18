@@ -13,8 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.kidcare.acceso_service.dto.VerificarAccesoResponseDTO;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 import java.security.SecureRandom;
+import java.util.HashMap;
 import java.util.Map;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -193,18 +197,48 @@ public class TokenMedicoService {
             response.setObservacionIds(Arrays.asList(tokenMedico.getObservacionIds().split(",")));
         }
 
+        RestTemplate restTemplate = new RestTemplate();
+
+        // Intenta obtener el historial existente
+        String resumenTexto = null;
         try {
-            RestTemplate restTemplate = new RestTemplate();
             String url = historialServiceUrl + "/api/historial/medico/" + idMenor;
             @SuppressWarnings("unchecked")
             Map<String, Object> historial = restTemplate.getForObject(url, Map.class);
             if (historial != null && historial.get("resumen") != null) {
-                response.setResumen(historial.get("resumen").toString());
-                response.setTipo("resumen");
-            } else {
-                response.setTipo("sin_historial");
+                resumenTexto = historial.get("resumen").toString();
             }
         } catch (Exception e) {
+            // No existe historial todavía — lo generamos a continuación
+        }
+
+        // Si no hay historial y el token tiene observaciones guardadas, genera uno ahora
+        if (resumenTexto == null &&
+                tokenMedico.getObservacionIds() != null &&
+                !tokenMedico.getObservacionIds().isBlank()) {
+            try {
+                List<String> ids = Arrays.asList(tokenMedico.getObservacionIds().split(","));
+                Map<String, Object> genBody = new HashMap<>();
+                genBody.put("idMenor", idMenor);
+                genBody.put("idInteracciones", ids);
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                HttpEntity<Map<String, Object>> req = new HttpEntity<>(genBody, headers);
+                @SuppressWarnings("unchecked")
+                Map<String, Object> genResp = restTemplate.postForObject(
+                        historialServiceUrl + "/api/historial/interno/generar", req, Map.class);
+                if (genResp != null && genResp.get("resumen") != null) {
+                    resumenTexto = genResp.get("resumen").toString();
+                }
+            } catch (Exception ex) {
+                // Generación fallida — el médico verá "sin resumen"
+            }
+        }
+
+        if (resumenTexto != null) {
+            response.setResumen(resumenTexto);
+            response.setTipo("resumen");
+        } else {
             response.setTipo("sin_historial");
         }
 
