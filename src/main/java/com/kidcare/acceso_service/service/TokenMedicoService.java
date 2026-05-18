@@ -44,12 +44,19 @@ public class TokenMedicoService {
     // Genera un enlace temporal único para que el médico acceda a la bitácora
     public TokenMedicoResponseDTO generarToken(TokenMedicoRequestDTO dto, Integer idUsuarioTutor) {
 
-        // Busca el acceso del tutor sobre el menor
+        // Busca el acceso del tutor sobre el menor; si no existe lo crea
+        // automáticamente
         List<Acceso> accesos = accesoRepository.findByIdUsuario(idUsuarioTutor);
         Acceso acceso = accesos.stream()
                 .filter(a -> a.getIdMenor().equals(dto.getIdMenor()))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("No tienes acceso sobre este menor"));
+                .orElseGet(() -> {
+                    Acceso nuevo = new Acceso();
+                    nuevo.setIdUsuario(idUsuarioTutor);
+                    nuevo.setIdMenor(dto.getIdMenor());
+                    nuevo.setFechaCreacion(LocalDate.now());
+                    return accesoRepository.save(nuevo);
+                });
 
         // Invalida el token activo anterior si existe
         List<TokenMedico> tokensActivos = tokenMedicoRepository
