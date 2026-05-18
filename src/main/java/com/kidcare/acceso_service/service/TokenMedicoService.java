@@ -116,7 +116,10 @@ public class TokenMedicoService {
         // Verifica que el token esté activo
         if (!tokenMedico.getEstadoToken().equals("activo")) {
             registrarLog(tokenMedico, "ERROR", null);
-            throw new RuntimeException("El enlace no está activo");
+            if ("revocado".equals(tokenMedico.getEstadoToken())) {
+                throw new RuntimeException("El enlace fue revocado por el tutor");
+            }
+            throw new RuntimeException("El enlace ha expirado o no está disponible");
         }
 
         // Verifica que el token no haya expirado (20 minutos)
